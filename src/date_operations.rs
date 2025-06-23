@@ -27,30 +27,16 @@ pub fn day_of_year(date: &DateTime<Utc>) -> Result<u32, String> {
 ///
 pub fn day_of_year_str(date_str: &str) -> Result<u32, String> {
     // Parse the date string to a NaiveDate
-    let naive_date = NaiveDate::parse_from_str(date_str, "%Y-%m-%d").map_err(|_| "Invalid date format".to_string())?;
+    let naive_date = NaiveDate::parse_from_str(date_str, "%Y-%m-%d")
+        .map_err(|_| "Invalid date format".to_string())?;
 
     // Get the day of the year
     Ok(naive_date.ordinal())
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_day_of_year() {
-        let naive_date = NaiveDate::from_ymd_opt(2023, 1, 1).unwrap();
-        let naive_datetime = naive_date.and_hms_opt(0, 0, 0).unwrap();
-        let day_of_year = day_of_year(&DateTime::from_naive_utc_and_offset(naive_datetime, Utc)).unwrap();
-        assert_eq!(day_of_year, 1);
-    }
-
-    #[test]
-    fn test_day_of_year_leap_year() {
-        let naive_date = NaiveDate::from_ymd_opt(2020, 2, 29).unwrap();
-        let naive_datetime = naive_date.and_hms_opt(0, 0, 0).unwrap();
-        let day_of_year = day_of_year(&DateTime::from_naive_utc_and_offset(naive_datetime, Utc)).unwrap();
-        assert_eq!(day_of_year, 60);
-    }
 
     #[test]
     fn test_day_of_year_str() {
@@ -59,7 +45,28 @@ mod tests {
     }
 
     #[test]
+    fn test_day_of_year() {
+        let naive_date = NaiveDate::from_ymd_opt(2023, 1, 1).unwrap();
+        let naive_datetime = naive_date.and_hms_opt(0, 0, 0).unwrap();
+        let day_of_year =
+            day_of_year(&DateTime::from_naive_utc_and_offset(naive_datetime, Utc)).unwrap();
+        assert_eq!(day_of_year, 1);
+    }
+
+    #[test]
+    fn test_day_of_year_leap_year() {
+        let naive_date = NaiveDate::from_ymd_opt(2020, 2, 29).unwrap();
+        let naive_datetime = naive_date.and_hms_opt(0, 0, 0).unwrap();
+        let day_of_year =
+            day_of_year(&DateTime::from_naive_utc_and_offset(naive_datetime, Utc)).unwrap();
+        assert_eq!(day_of_year, 60);
+    }
+
+    #[test]
     fn test_day_of_year_str_invalid_format() {
-        assert_eq!(day_of_year_str("2023-01-32"), Err("Invalid date format".to_string()));
+        assert_eq!(
+            day_of_year_str("2023-01-32"),
+            Err("Invalid date format".to_string())
+        );
     }
 }

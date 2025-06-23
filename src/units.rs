@@ -51,7 +51,7 @@ impl Units {
             Units::Hectares => "ha",
             Units::SquareFeet => "ft²",
             Units::SquareMeters => "m²",
-            Units::Percent => "%"
+            Units::Percent => "%",
         }
     }
 
@@ -99,7 +99,7 @@ impl Units {
             "%" => Ok(Units::Percent),
             "percent" => Ok(Units::Percent),
             "Percent" => Ok(Units::Percent),
-            _ => Err(format!("Invalid unit: {}", abbreviation))
+            _ => Err(format!("Invalid unit: {}", abbreviation)),
         }
     }
 
@@ -132,7 +132,7 @@ impl Units {
         }
     }
 
-    // convert between different units, there are several special cases to consider where meters to meters per second conversion is based on 
+    // convert between different units, there are several special cases to consider where meters to meters per second conversion is based on
     // total meters per day and will change to meters per second. Also miles (per day) to meters per second conversion is based on total miles per day.
     pub fn convert(&self, value: f64, to_unit: &Units) -> Result<f64, String> {
         match (self, to_unit) {
@@ -168,11 +168,16 @@ impl Units {
             (Units::SquareMeters, Units::SquareFeet) => Ok(value * 10.7639),
             (Units::Hectares, Units::Acres) => Ok(value / 2.47105),
             (Units::Acres, Units::Hectares) => Ok(value * 2.47105),
-            _ => Err(format!("Unsupported conversion from {} to {}", self.name(), to_unit.name()))
+            _ => Err(format!(
+                "Unsupported conversion from {} to {}",
+                self.name(),
+                to_unit.name()
+            )),
         }
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -186,20 +191,52 @@ mod tests {
         assert_eq!(celsius.convert(25.0, &fahrenheit), Ok(77.0));
         assert_eq!(fahrenheit.convert(77.0, &celsius), Ok(25.0));
 
-        assert_eq!(celsius.convert(25.0, &meters), Err(format!("Unsupported conversion from {} to {}", celsius.name(), meters.name())));
+        assert_eq!(
+            celsius.convert(25.0, &meters),
+            Err(format!(
+                "Unsupported conversion from {} to {}",
+                celsius.name(),
+                meters.name()
+            ))
+        );
         assert_eq!(meters.convert(25000.0, &kilometers), Ok(25.0));
 
-        assert_eq!(Units::Langley.convert(1000.0, &Units::MegaJoulesPerSquareMeter), Ok(41.84));
-        assert_eq!(Units::MegaJoulesPerSquareMeter.convert(41.84, &Units::Langley), Ok(1000.0));
-        assert_eq!(Units::Langley.convert(0.0, &Units::MegaJoulesPerSquareMeter), Ok(0.0));
+        assert_eq!(
+            Units::Langley.convert(1000.0, &Units::MegaJoulesPerSquareMeter),
+            Ok(41.84)
+        );
+        assert_eq!(
+            Units::MegaJoulesPerSquareMeter.convert(41.84, &Units::Langley),
+            Ok(1000.0)
+        );
+        assert_eq!(
+            Units::Langley.convert(0.0, &Units::MegaJoulesPerSquareMeter),
+            Ok(0.0)
+        );
 
-        assert_eq!(Units::Degrees.convert(45.0, &Units::Radians), Ok(std::f64::consts::PI / 4.0));
-        assert_eq!(Units::Radians.convert(std::f64::consts::PI / 4.0, &Units::Degrees), Ok(45.0));
+        assert_eq!(
+            Units::Degrees.convert(45.0, &Units::Radians),
+            Ok(std::f64::consts::PI / 4.0)
+        );
+        assert_eq!(
+            Units::Radians.convert(std::f64::consts::PI / 4.0, &Units::Degrees),
+            Ok(45.0)
+        );
 
-        let mph = (Units::MetersPerSecond.convert(10.0, &Units::MilesPerHour).unwrap() * 10000.0).round() / 10000.0; // round to 4 decimal places
+        let mph = (Units::MetersPerSecond
+            .convert(10.0, &Units::MilesPerHour)
+            .unwrap()
+            * 10000.0)
+            .round()
+            / 10000.0; // round to 4 decimal places
         assert_eq!(mph, 22.3694);
 
-        let mps = (Units::MilesPerHour.convert(22.3694, &Units::MetersPerSecond).unwrap() * 10000.0).round() / 10000.0; // round to 4 decimal places
+        let mps = (Units::MilesPerHour
+            .convert(22.3694, &Units::MetersPerSecond)
+            .unwrap()
+            * 10000.0)
+            .round()
+            / 10000.0; // round to 4 decimal places
         assert_eq!(mps, 10.0);
     }
 }

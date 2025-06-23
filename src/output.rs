@@ -15,6 +15,12 @@ pub struct Output {
     date: DateTime<Utc>, // date and time of the reading
 }
 
+impl Default for Output {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Output {
     pub fn new_with_values(tmax: f64, tmin: f64, rhmax: Option<f64>, rhmin: Option<f64>, dewpoint: Option<f64>, ea: Option<f64>,
                            rs: Option<f64>, ws: Option<f64>, wz: Option<f64>, z: f64, latitude: f64, date: DateTime<Utc>) -> Output {
