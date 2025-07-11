@@ -67,6 +67,7 @@ impl Units {
             "cm" => Ok(Units::Centimeters),
             "m" => Ok(Units::Meters),
             "km" => Ok(Units::Kilometers),
+            "KM" => Ok(Units::Kilometers),
             "in" => Ok(Units::Inches),
             "ft" => Ok(Units::Feet),
             "yd" => Ok(Units::Yards),
@@ -75,8 +76,12 @@ impl Units {
             "MJ/m²" => Ok(Units::MegaJoulesPerSquareMeter),
             "mj/m²" => Ok(Units::MegaJoulesPerSquareMeter),
             "mj/m2" => Ok(Units::MegaJoulesPerSquareMeter),
+            "mj/m^2" => Ok(Units::MegaJoulesPerSquareMeter),
+            "mJ/m^2" => Ok(Units::MegaJoulesPerSquareMeter),
             "W/m²" => Ok(Units::WattsPerSquareMeter),
             "w/m²" => Ok(Units::WattsPerSquareMeter),
+            "W/m-2" => Ok(Units::WattsPerSquareMeter),
+            "w/m-2" => Ok(Units::WattsPerSquareMeter),
             "Pa" => Ok(Units::Pascals),
             "pa" => Ok(Units::Pascals),
             "kpa" => Ok(Units::KiloPascals),
@@ -99,6 +104,8 @@ impl Units {
             "%" => Ok(Units::Percent),
             "percent" => Ok(Units::Percent),
             "Percent" => Ok(Units::Percent),
+            "degC" => Ok(Units::Celsius),
+            "degF" => Ok(Units::Fahrenheit),
             _ => Err(format!("Invalid unit: {}", abbreviation)),
         }
     }
@@ -159,7 +166,8 @@ impl Units {
             (Units::MetersPerSecond, Units::MilesPerHour) => Ok(value * 2.23694),
             (Units::MilesPerHour, Units::MetersPerSecond) => Ok(value / 2.23694),
             (Units::Miles, Units::MetersPerSecond) => Ok(value * 0.01864352),
-            (Units::Meters, Units::MetersPerSecond) => Ok(value * 0.000011574074),
+            (Units::Meters, Units::MetersPerSecond) => Ok(value * 0.000011574074),  // assumes Meters per day
+            (Units::Kilometers, Units::MetersPerSecond) => Ok(value * 0.0011574074),  // assumes Kilometers per day
             (Units::Acres, Units::SquareMeters) => Ok(value * 4046.86),
             (Units::SquareMeters, Units::Acres) => Ok(value / 4046.86),
             (Units::Hectares, Units::SquareMeters) => Ok(value * 10000.0),

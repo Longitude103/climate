@@ -1,9 +1,10 @@
 use crate::output::Output;
 use crate::units::Units;
+use chrono::NaiveDate;
 use std::error::Error;
 
 pub struct DailyData {
-    date: String,
+    date: NaiveDate,
     tmin: f64,
     tmin_units: String,
     tmax: f64,
@@ -43,9 +44,18 @@ impl DailyData {
     /// # Returns
     ///
     /// A new instance of `DailyData`.
-    fn new(date: String, tmin: (f64, String), tmax: (f64, String), rhmin: Option<(f64, String)>, rhmax: Option<(f64, String)>,
-           dewpoint: Option<(f64, String)>, precip: Option<(f64, String)>, rs: Option<(f64, String)>, ea: Option<(f64, String)>,
-           wind_speed: Option<(f64, String)>) -> Result<DailyData, String> {
+    pub fn new(
+        date: NaiveDate,
+        tmin: (f64, String),
+        tmax: (f64, String),
+        rhmin: Option<(f64, String)>,
+        rhmax: Option<(f64, String)>,
+        dewpoint: Option<(f64, String)>,
+        precip: Option<(f64, String)>,
+        rs: Option<(f64, String)>,
+        ea: Option<(f64, String)>,
+        wind_speed: Option<(f64, String)>,
+    ) -> Result<DailyData, String> {
         let (tmin_value, tmin_units) = tmin;
         let (tmax_value, tmax_units) = tmax;
 
@@ -74,7 +84,10 @@ impl DailyData {
         if let Some((rhmin_value, rhmin_units)) = rhmin {
             daily_data.rhmin = Some(rhmin_value);
             if rhmin_units.is_empty() {
-                return Err("Relative humidity min units must not be empty when including a value".to_string());
+                return Err(
+                    "Relative humidity min units must not be empty when including a value"
+                        .to_string(),
+                );
             }
 
             daily_data.rhmin_units = Some(rhmin_units);
@@ -83,7 +96,10 @@ impl DailyData {
         if let Some((rhmax_value, rhmax_units)) = rhmax {
             daily_data.rhmax = Some(rhmax_value);
             if rhmax_units.is_empty() {
-                return Err("Relative humidity max units must not be empty when including a value".to_string());
+                return Err(
+                    "Relative humidity max units must not be empty when including a value"
+                        .to_string(),
+                );
             }
 
             daily_data.rhmax_units = Some(rhmax_units);
@@ -99,7 +115,9 @@ impl DailyData {
         if let Some((precip_value, precip_units)) = precip {
             daily_data.precip = Some(precip_value);
             if precip_units.is_empty() {
-                return Err("Precipitation units must not be empty when including a value".to_string());
+                return Err(
+                    "Precipitation units must not be empty when including a value".to_string(),
+                );
             }
 
             daily_data.precip_units = Some(precip_units);
@@ -107,7 +125,9 @@ impl DailyData {
         if let Some((rs_value, rs_units)) = rs {
             daily_data.rs = Some(rs_value);
             if rs_units.is_empty() {
-                return Err("Solar radiation units must not be empty when including a value".to_string());
+                return Err(
+                    "Solar radiation units must not be empty when including a value".to_string(),
+                );
             }
 
             daily_data.rs_units = Some(rs_units);
@@ -115,7 +135,9 @@ impl DailyData {
         if let Some((ea_value, ea_units)) = ea {
             daily_data.ea = Some(ea_value);
             if ea_units.is_empty() {
-                return Err("Vapor pressure units must not be empty when including a value".to_string());
+                return Err(
+                    "Vapor pressure units must not be empty when including a value".to_string(),
+                );
             }
 
             daily_data.ea_units = Some(ea_units);
@@ -131,8 +153,9 @@ impl DailyData {
         Ok(daily_data)
     }
 
-    fn to_output(&self, output: &mut Output) -> Result<(), String> {
-        output.set_date(self.date.clone().parse().unwrap());
+    fn to_output(&self) -> Result<Output, String> {
+        let mut output = Output::new();
+        output.set_date(self.date.clone());
         output.set_tmin(convert_temp_to_c(self.tmin, &*self.tmin_units)?);
         output.set_tmax(convert_temp_to_c(self.tmax, &*self.tmax_units)?);
         if self.dewpoint.is_some() {
@@ -143,88 +166,133 @@ impl DailyData {
 
         if self.rhmin.is_some() {
             let r_units = self.rhmin_units.as_ref().unwrap().clone();
-            let r_unit = Units::from_abbreviation(&r_units).expect("Invalid units for relative humidity");
+            let r_unit =
+                Units::from_abbreviation(&r_units).expect("Invalid units for relative humidity");
             match r_unit {
                 Units::Percent => {
                     output.set_rhmin(Some(self.rhmin.unwrap()));
                 }
-                _ => return Err("Invalid units for relative humidity min, must be percent".to_string()),
+                _ => {
+                    return Err(
+                        "Invalid units for relative humidity min, must be percent".to_string()
+                    )
+                }
             }
         }
 
         if self.rhmax.is_some() {
             let r_units = self.rhmax_units.as_ref().unwrap().clone();
-            let r_unit = Units::from_abbreviation(&r_units).expect("Invalid units for relative humidity");
+            let r_unit =
+                Units::from_abbreviation(&r_units).expect("Invalid units for relative humidity");
             match r_unit {
                 Units::Percent => {
                     output.set_rhmax(Some(self.rhmin.unwrap()));
                 }
-                _ => return Err("Invalid units for relative humidity max, must be percent".to_string()),
+                _ => {
+                    return Err(
+                        "Invalid units for relative humidity max, must be percent".to_string()
+                    )
+                }
             }
         }
 
         if self.ea.is_some() {
             let ea_units = self.ea_units.as_ref().unwrap().clone();
-            let ea_unit = Units::from_abbreviation(&ea_units).expect("Invalid units for vapor pressure");
+            let ea_unit =
+                Units::from_abbreviation(&ea_units).expect("Invalid units for vapor pressure");
             match ea_unit {
                 Units::KiloPascals => output.set_ea(Some(self.ea.unwrap())),
-                Units::Pascals => output.set_ea(Some(Units::Pascals.convert(self.ea.unwrap(), &Units::KiloPascals).expect("Units conversion failed"))),
+                Units::Pascals => output.set_ea(Some(
+                    Units::Pascals
+                        .convert(self.ea.unwrap(), &Units::KiloPascals)
+                        .expect("Units conversion failed"),
+                )),
                 _ => panic!("Invalid units for ea: {}", ea_units),
             }
         }
 
         if self.rs.is_some() {
             let rs_units = self.rs_units.as_ref().unwrap().clone();
-            let rs_unit = Units::from_abbreviation(&rs_units).expect("Invalid units for solar radiation");
+            let rs_unit =
+                Units::from_abbreviation(&rs_units).expect("Invalid units for solar radiation");
             match rs_unit {
                 Units::MegaJoulesPerSquareMeter => output.set_rs(Some(self.rs.unwrap())),
-                Units::Langley => output.set_rs(Some(Units::Langley.convert(self.rs.unwrap(), &Units::MegaJoulesPerSquareMeter).expect("Units conversion failed"))),
+                Units::WattsPerSquareMeter => output.set_rs(Some(
+                    Units::WattsPerSquareMeter
+                        .convert(self.rs.unwrap(), &Units::MegaJoulesPerSquareMeter)
+                        .expect("Units conversion failed"),
+                )),
+                Units::Langley => output.set_rs(Some(
+                    Units::Langley
+                        .convert(self.rs.unwrap(), &Units::MegaJoulesPerSquareMeter)
+                        .expect("Units conversion failed"),
+                )),
                 _ => panic!("Invalid units for rs: {}", rs_units),
             }
         }
 
         if self.wind_speed.is_some() {
             let ws_units = self.ws_units.as_ref().unwrap().clone();
-            let ws_unit = Units::from_abbreviation(&ws_units).expect("Invalid units for wind speed");
+            let ws_unit =
+                Units::from_abbreviation(&ws_units).expect("Invalid units for wind speed");
             match ws_unit {
                 Units::MetersPerSecond => output.set_ws(Some(self.wind_speed.unwrap())),
-                Units::MilesPerHour => output.set_ws(Some(Units::MilesPerHour.convert(self.wind_speed.unwrap(), &Units::MetersPerSecond).expect("Units conversion failed"))),
-                Units::Miles => output.set_ws(Some(Units::Miles.convert(self.wind_speed.unwrap(), &Units::MetersPerSecond).expect("Units conversion failed"))),
-                Units::Meters => output.set_ws(Some(Units::Meters.convert(self.wind_speed.unwrap(), &Units::MetersPerSecond).expect("Units conversion failed"))),
+                Units::MilesPerHour => output.set_ws(Some(
+                    Units::MilesPerHour
+                        .convert(self.wind_speed.unwrap(), &Units::MetersPerSecond)
+                        .expect("Units conversion failed"),
+                )),
+                Units::Miles => output.set_ws(Some(
+                    Units::Miles
+                        .convert(self.wind_speed.unwrap(), &Units::MetersPerSecond)
+                        .expect("Units conversion failed"),
+                )),
+                Units::Meters => output.set_ws(Some(
+                    Units::Meters
+                        .convert(self.wind_speed.unwrap(), &Units::MetersPerSecond)
+                        .expect("Units conversion failed"),
+                )),
+                Units::Kilometers => output.set_ws(Some(
+                    Units::Kilometers
+                        .convert(self.wind_speed.unwrap(), &Units::MetersPerSecond)
+                        .expect("Units conversion failed"),
+                )),
                 _ => panic!("Invalid units for ws: {}", ws_units),
             }
         }
 
-        Ok(())
+        Ok(output)
     }
 }
 
 fn convert_temp_to_c(value: f64, actual_units: &str) -> Result<f64, String> {
     let tmin_unit = Units::from_abbreviation(actual_units)?;
     match tmin_unit {
-        Units::Celsius => {
-            Ok(value)
-        }
-        Units::Fahrenheit => {
-            Ok(Units::Fahrenheit.convert(value, &Units::Celsius)?)
-        }
+        Units::Celsius => Ok(value),
+        Units::Fahrenheit => Ok(Units::Fahrenheit.convert(value, &Units::Celsius)?),
         _ => Err(format!("Invalid units for temperature: {}", actual_units)),
     }
 }
 
-struct StationData {
-    name: String,
-    source: String,
-    latitude: f64,
-    longitude: f64,
-    elevation: f64,
-    wind_height: f64,
-    daily_data: Vec<DailyData>,
+pub struct StationData {
+    pub name: String,
+    pub source: String,
+    pub latitude: f64,
+    pub longitude: f64,
+    pub elevation: f64,
+    pub wind_height: f64,
+    pub daily_data: Vec<DailyData>,
 }
 
 impl StationData {
-    fn new(name: String, source: String, latitude: f64, longitude: f64, elevation: f64, wind_height: f64)
-           -> StationData {
+    pub fn new(
+        name: String,
+        source: String,
+        latitude: f64,
+        longitude: f64,
+        elevation: f64,
+        wind_height: f64,
+    ) -> StationData {
         StationData {
             name,
             source,
@@ -236,17 +304,18 @@ impl StationData {
         }
     }
 
-    fn add_daily_data(&mut self,
-                      date: String,
-                      tmin: (f64, String),        // (value, units)
-                      tmax: (f64, String),        // (value, units)
-                      rhmin: (f64, String),        // (value, units)
-                      rhmax: (f64, String),        // (value, units)
-                      dewpoint: (f64, String),        // (value, units)
-                      precip: (f64, String),      // (value, units)
-                      radiation_solar: (f64, String), // (value, units)
-                      ea: (f64, String),          // (value, units)
-                      wind_speed: (f64, String),   // (value, units)
+    pub fn add_daily_data(
+        &mut self,
+        date: NaiveDate,
+        tmin: (f64, String),            // (value, units)
+        tmax: (f64, String),            // (value, units)
+        rhmin: (f64, String),           // (value, units)
+        rhmax: (f64, String),           // (value, units)
+        dewpoint: (f64, String),        // (value, units)
+        precip: (f64, String),          // (value, units)
+        radiation_solar: (f64, String), // (value, units)
+        ea: (f64, String),              // (value, units)
+        wind_speed: (f64, String),      // (value, units)
     ) -> Result<(), Box<dyn Error>> {
         let daily_data = DailyData::new(
             date,
@@ -264,12 +333,15 @@ impl StationData {
         Ok(())
     }
 
-    fn to_output(&self) -> Result<Vec<Output>, String> {
+    pub fn add_daily_records(&mut self, records: Vec<DailyData>) {
+        self.daily_data = records;
+    }
+
+    pub fn to_output(&self) -> Result<Vec<Output>, String> {
         let mut result: Vec<Output> = Vec::new();
 
         for daily_data in &self.daily_data {
-            let mut output = Output::new();
-            daily_data.to_output(&mut output)?;
+            let mut output = daily_data.to_output()?;
 
             output.set_latitude(self.latitude);
             output.set_z(self.elevation);

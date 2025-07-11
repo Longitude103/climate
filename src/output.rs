@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{NaiveDate, Utc};
 
 pub struct Output {
     tmax: f64,  // temperature maximum in Celsius
@@ -12,7 +12,7 @@ pub struct Output {
     wz: Option<f64>,  // height of wind speed m
     z: f64,  // elevation in m
     latitude: f64,  // latitude in radians
-    date: DateTime<Utc>, // date and time of the reading
+    date: NaiveDate, // date and time of the reading
 }
 
 impl Default for Output {
@@ -23,7 +23,7 @@ impl Default for Output {
 
 impl Output {
     pub fn new_with_values(tmax: f64, tmin: f64, rhmax: Option<f64>, rhmin: Option<f64>, dewpoint: Option<f64>, ea: Option<f64>,
-                           rs: Option<f64>, ws: Option<f64>, wz: Option<f64>, z: f64, latitude: f64, date: DateTime<Utc>) -> Output {
+                           rs: Option<f64>, ws: Option<f64>, wz: Option<f64>, z: f64, latitude: f64, date: NaiveDate) -> Output {
         Output {
             tmax,
             tmin,
@@ -53,7 +53,7 @@ impl Output {
             wz: None,
             z: 0.0,
             latitude: 0.0,
-            date: Utc::now(),
+            date: Utc::now().date_naive(),
         }
     }
 
@@ -163,11 +163,11 @@ impl Output {
     }
 
     // date getters and setters
-    pub fn get_date(&self) -> DateTime<Utc> {
+    pub fn get_date(&self) -> NaiveDate {
         self.date
     }
 
-    pub fn set_date(&mut self, date: DateTime<Utc>) {
+    pub fn set_date(&mut self, date: NaiveDate) {
         self.date = date;
     }
 }
