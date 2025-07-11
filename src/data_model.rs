@@ -4,25 +4,27 @@ use chrono::NaiveDate;
 use std::error::Error;
 
 pub struct DailyData {
-    date: NaiveDate,
-    tmin: f64,
-    tmin_units: String,
-    tmax: f64,
-    tmax_units: String,
-    rhmin: Option<f64>,
-    rhmin_units: Option<String>,
-    rhmax: Option<f64>,
-    rhmax_units: Option<String>,
-    dewpoint: Option<f64>,
-    dewpoint_units: Option<String>,
-    precip: Option<f64>,
-    precip_units: Option<String>,
-    rs: Option<f64>,
-    rs_units: Option<String>,
-    ea: Option<f64>,
-    ea_units: Option<String>,
-    wind_speed: Option<f64>,
-    ws_units: Option<String>,
+    pub date: NaiveDate,
+    pub tmin: f64,
+    pub tmin_units: String,
+    pub tmax: f64,
+    pub tmax_units: String,
+    pub rhmin: Option<f64>,
+    pub rhmin_units: Option<String>,
+    pub rhmax: Option<f64>,
+    pub rhmax_units: Option<String>,
+    pub dewpoint: Option<f64>,
+    pub dewpoint_units: Option<String>,
+    pub precip: Option<f64>,
+    pub precip_units: Option<String>,
+    pub rs: Option<f64>,
+    pub rs_units: Option<String>,
+    pub ea: Option<f64>,
+    pub ea_units: Option<String>,
+    pub wind_speed: Option<f64>,
+    pub ws_units: Option<String>,
+    pub short_refet: Option<f64>,
+    pub tall_refet: Option<f64>,
 }
 
 impl DailyData {
@@ -79,6 +81,8 @@ impl DailyData {
             ea_units: None,
             wind_speed: None,
             ws_units: None,
+            short_refet: None,
+            tall_refet: None,
         };
 
         if let Some((rhmin_value, rhmin_units)) = rhmin {
@@ -282,6 +286,7 @@ pub struct StationData {
     pub elevation: f64,
     pub wind_height: f64,
     pub daily_data: Vec<DailyData>,
+    pub id: Option<i32>,
 }
 
 impl StationData {
@@ -292,6 +297,7 @@ impl StationData {
         longitude: f64,
         elevation: f64,
         wind_height: f64,
+        id: Option<i32>,
     ) -> StationData {
         StationData {
             name,
@@ -301,6 +307,7 @@ impl StationData {
             elevation,
             wind_height,
             daily_data: Vec::new(),
+            id,
         }
     }
 
