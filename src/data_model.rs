@@ -3,6 +3,7 @@ use crate::units::Units;
 use chrono::NaiveDate;
 use std::error::Error;
 
+#[derive(Debug)]
 pub struct DailyData {
     pub date: NaiveDate,
     pub tmin: f64,
@@ -278,6 +279,7 @@ fn convert_temp_to_c(value: f64, actual_units: &str) -> Result<f64, String> {
     }
 }
 
+#[derive(Debug)]
 pub struct StationData {
     pub name: String,
     pub source: String,
